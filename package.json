@@ -1,4 +1,16 @@
 {
+  "name": "hashtag-tracker",
+  "version": "1.0.0",
+  "engines": {
+    "node": "10.15.1"
+  },
+  "description": "web application to track a given hashtag",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "Marcus Schimizzi",
+  "keywords": [],
   "dependencies": {
     "express": "^4.17.1",
     "socket.io": "^2.2.0",
