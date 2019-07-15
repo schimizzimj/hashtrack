@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Hashtag Tracker</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      $(function(){
+        var socket = io();
+        socket.on('tweets', function (data) {
+          var count = $('#tweets li').length;
+          if (count === 0) {
+            $('#loading').hide();
+            $('#tweets-container').show();
+          }
+          if (count >= 30){ // limit tweets shown at once to 30
+            $("#tweets li").first().remove();
+          }
+          if (data.detail.truncated) { // check if the tweet was truncated, and if so, make sure to use full text
+            $('#tweets').prepend('\
+              <div>\
+                <div class="clearfix">\
+                  <img src="' + data.detail.user.profile_image_url_https + '" />\
+                  <p class="name">' + data.detail.user.name  + '</p>\
+                  <p class="screen_name">@' + data.detail.user.screen_name + '</p>\
+                </div>\
+                <p class="text">' + data.detail.extended_tweet.full_text +'</p>\
+              </div>\
+            ');
+          } else {
+            $('#tweets').prepend('\
+              <div>\
+                <div class="clearfix">\
+                  <img src="' + data.detail.user.profile_image_url_https + '" />\
+                  <p class="name">' + data.detail.user.name  + '</p>\
+                  <p class="screen_name">@' + data.detail.user.screen_name + '</p>\
+                </div>\
+                <p class="text">' + data.detail.text +'</p>\
+              </div>\
+            ');
+          }
+        });
+        $('#submit').click(function() { // fires when submit button is clicked
+          if ($('#hashtag').val() === '') { // check to make sure a hashtag was entered and give alert if not
+            $('<div class="alert alert-danger alert-dismissible fade show" role="alert">\
+                <strong>Please enter a hashtag to track!</strong>\
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">\
+                  <span aria-hidden="true">&times;</span>\
+                </button>\
+              </div>').insertBefore("#inputs");
+          } else { // send the hashtag via socket to the backend
+            socket.emit('hashtag', { query: $('#hashtag').val(), retweets: $('#retweets').is(":checked") });
+            $('#tweets').empty(); // clear the tweets for a new hashtag entered
+            $('#loading').show();
+            $('#tweets-container').hide();
+          }
+        });
+      });
+    </script>
+    <style>
+      #content {
+        margin: 0;
+      }
+
+      .vertical-center {
+        min-height: 100%;
+        min-height: 100vh;
+
+        display: flex;
+        align-items: center;
+      }
+
+      #retweets {
+        margin-left: 3px;
+      }
+
+      #loading {
+        display: none;
+      }
+
+      #tweets-container {
+        display: none;
+      }
+
+      #tweets {
+        height: 50vh;
+        overflow-y: auto;
+      }
+
+      #tweets > div {
+        background-color: white;
+        border: 1px solid grey;
+        border-radius: 5px;
+        margin-bottom: 5px;
+        padding: 5px;
+      }
+
+      #tweets > div  > div > img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+      }
+
+      #tweets > div > div > img, .name, .screen_name {
+        float: left;
+        margin-right: 5px;
+      }
+
+      .name, .screen_name {
+        line-height: 48px;
+      }
+
+      .name {
+        font-weight: bold;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="content" class="jumbotron vertical-center">
+      <div class="container">
+        <h1>Hashtag Tracker</h1>
+        <p>Simply tracks tweets matching an inputted hashtag and displays new matching tweets as they are posted.</p>
+        <div class="input-group mb-3" id="inputs">
+          <div class="input-group-prepend">
+            <span class="input-group-text" id="basic-addon1">#</span>
+          </div>
+          <input type="text" class="form-control" placeholder="Hashtag to track" aria-label="Hashtag" aria-describedby="basic-addon1" id="hashtag">
+          <div class="input-group-append">
+            <span class="input-group-text" id="basic-addon1">Allow retweets? <input type="checkbox" id="retweets" checked> </span>
+            <button class="btn btn-outline-secondary" id="submit" type="button">Search</button>
+          </div>
+        </div>
+        <div id="loading">
+          <div class="d-flex justify-content-center">
+            <div class="spinner-grow text-primary" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+        </div>
+        <div id="tweets-container">
+          <h1>Tweets:</h1>
+          <div id="tweets"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
