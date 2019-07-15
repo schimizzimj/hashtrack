@@ -126,14 +126,22 @@
       <div class="container">
         <h1>Hashtag Tracker</h1>
         <p>Simply tracks tweets matching an inputted hashtag and displays new matching tweets as they are posted.</p>
-        <div class="input-group mb-3" id="inputs">
-          <div class="input-group-prepend">
-            <span class="input-group-text" id="basic-addon1">#</span>
+        <div class="row">
+          <div class="col-md-9">
+            <div class="input-group mb-3" id="inputs">
+              <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon1">#</span>
+              </div>
+              <input type="text" class="form-control" placeholder="Hashtag to track" aria-label="Hashtag" aria-describedby="basic-addon1" id="hashtag">
+              <div class="input-group-append">
+                <button class="btn btn-outline-secondary" id="submit" type="button">Search</button>
+              </div>
+            </div>
           </div>
-          <input type="text" class="form-control" placeholder="Hashtag to track" aria-label="Hashtag" aria-describedby="basic-addon1" id="hashtag">
-          <div class="input-group-append">
-            <span class="input-group-text" id="basic-addon1">Allow retweets? <input type="checkbox" id="retweets" checked> </span>
-            <button class="btn btn-outline-secondary" id="submit" type="button">Search</button>
+          <div class="col-md-3 mx-auto">
+            <div class="input-group mb-3">
+              <span class="input-group-text">Allow retweets? <input type="checkbox" id="retweets" checked> </span>
+            </div>
           </div>
         </div>
         <div id="loading">
