@@ -100,7 +100,7 @@ io.sockets.on('connection', function (socket) {
           }
         }
       });
-    }, 30000);
+    }, 10000);
 
     twStream.on('error', function(error) {
       throw error;
