@@ -111,7 +111,7 @@ function addTweet (list, tweet) {
 function getRecentTweets (hashtag, allowRetweets, socket) {
   console.log('refreshing tweets using search api');
   tw.get('search/tweets', { q: hashtag, count: 100, result_type: 'recent'}, function(err, data, response) {
-    console.log(data);
+    console.log(data.search_metadata);
     var statuses = data.statuses;
     if (statuses) {
       statuses.reverse();
