@@ -51,9 +51,11 @@ io.sockets.on('connection', function (socket) {
     // initially populate frontend with 50 most recent tweets fitting the search
     const searchQuantity = allowRetweets ? 50 : 100; // allow larger search if retweets are prohibited to ensure a sufficiently large amount of data
     tw.get('search/tweets', { q: hashtag, count: searchQuantity, result_type: 'recent'}, function(err, data, response) {
-      for (tweet in data.statuses) {
-        if (allowRetweets || data.statuses[tweet].text.slice(0,2) !== 'RT') {
-          socket.emit('tweets', { detail: data.statuses[tweet] });
+      var statuses = data.statuses;
+      statuses.reverse();
+      for (tweet in statuses) {
+        if (allowRetweets || statuses[tweet].text.slice(0,2) !== 'RT') {
+          socket.emit('tweets', { detail: statuses[tweet] });
         }
       }
     });
