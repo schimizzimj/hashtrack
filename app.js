@@ -39,6 +39,7 @@ io.sockets.on('connection', function (socket) {
   var interval = null;
 
   socket.on('hashtag', function (data) {
+    recordedTweets = [];
     if (interval) {
       clearInterval(interval);
       interval = null;
