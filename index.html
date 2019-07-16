@@ -18,10 +18,10 @@
             $('#loading').hide();
             $('#tweets-container').show();
           }
-          if (count >= 30){ // limit tweets shown at once to 30
+          if (count >= 50){ // limit tweets shown at once to 50
             $("#tweets li").first().remove();
           }
-          if (data.detail.truncated) { // check if the tweet was truncated, and if so, make sure to use full text
+          if (data.detail.truncated && data.detail.extended_tweet) { // check if the tweet was truncated, and if so, make sure to use full text
             $('#tweets').prepend('\
               <div>\
                 <div class="clearfix">\
