@@ -13,6 +13,7 @@
       $(function(){
         var socket = io();
         socket.on('tweets', function (data) {
+          console.log('Just received tweet...', data.detail.text);
           var count = $('#tweets li').length;
           if (count === 0) {
             $('#loading').hide();

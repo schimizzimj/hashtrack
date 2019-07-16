@@ -29,12 +29,20 @@ var twStream = tw.stream( // have only one stream instance per server
 );
 var emitTweets = false;
 var recordedTweets = [];
+var interval = null;
+var clients = 0;
 
 
 io.sockets.on('connection', function (socket) {
+  clients += 1;
+  var clientNum = clients;
+  console.log('client', clientNum, 'connected');
   var hashtag = '';
   var allowRetweets;
-  var interval = null;
+  if (interval) {
+    clearInterval(interval);
+    interval = null;
+  }
 
   socket.on('hashtag', function (data) {
     recordedTweets = [];
@@ -54,7 +62,7 @@ io.sockets.on('connection', function (socket) {
     }
 
     // initially populate frontend with 50 most recent tweets fitting the search
-    getRecentTweets(hashtag, allowRetweets, socket);
+    getRecentTweets(hashtag, allowRetweets, socket, 50);
 
     if (twStream) { // simply change the hashtag being tracked if the stream already exists
       if (twStream.reqOpts.form.track !== hashtag) {
@@ -79,7 +87,7 @@ io.sockets.on('connection', function (socket) {
     });
 
     // refresh tweet listing using the search api every 30 seconds
-    interval = setInterval(getRecentTweets, 20000, hashtag, allowRetweets, socket);
+    interval = setInterval(getRecentTweets, 20000, hashtag, allowRetweets, socket, 30);
 
     twStream.on('error', function(error) {
       throw error;
@@ -99,6 +107,13 @@ io.sockets.on('connection', function (socket) {
     });
   });
 
+  socket.on('disconnect', function() {
+    console.log('client', clientNum, 'disconnected');
+    clients -= 1;
+    clearInterval(interval);
+    twStream.stop();
+  })
+
 });
 
 function addTweet (list, tweet) {
@@ -108,9 +123,9 @@ function addTweet (list, tweet) {
   }
 }
 
-function getRecentTweets (hashtag, allowRetweets, socket) {
+function getRecentTweets (hashtag, allowRetweets, socket, count) {
   console.log('refreshing tweets using search api');
-  tw.get('search/tweets', { q: hashtag, count: 100, result_type: 'recent'}, function(err, data, response) {
+  tw.get('search/tweets', { q: hashtag, count: count, result_type: 'recent'}, function(err, data, response) {
     console.log(data.search_metadata);
     var statuses = data.statuses;
     if (statuses) {
