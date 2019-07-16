@@ -85,6 +85,23 @@ io.sockets.on('connection', function (socket) {
       }
     });
 
+    // refresh tweet listing using the search api every 30 seconds
+    setInterval(function() {
+      console.log('refreshing tweets using search api');
+      tw.get('search/tweets', { q: hashtag, count: 100, result_type: 'recent'}, function(err, data, response) {
+        var statuses = data.statuses;
+        statuses.reverse();
+        for (tweet in statuses) {
+          if (allowRetweets || statuses[tweet].text.slice(0,2) !== 'RT') {
+            if (!recordedTweets.includes(statuses[tweet].id)) {
+              socket.emit('tweets', { detail: statuses[tweet] });
+              addTweet(recordedTweets, statuses[tweet]);
+            }
+          }
+        }
+      });
+    }, 30000);
+
     twStream.on('error', function(error) {
       throw error;
     });
