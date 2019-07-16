@@ -95,14 +95,18 @@ io.sockets.on('connection', function (socket) {
       console.log('refreshing tweets using search api');
       tw.get('search/tweets', { q: hashtag, count: 100, result_type: 'recent'}, function(err, data, response) {
         var statuses = data.statuses;
-        statuses.reverse();
-        for (tweet in statuses) {
-          if (allowRetweets || statuses[tweet].text.slice(0,2) !== 'RT') {
-            if (!recordedTweets.includes(statuses[tweet].id)) {
-              socket.emit('tweets', { detail: statuses[tweet] });
-              addTweet(recordedTweets, statuses[tweet]);
+        if (statuses) {
+          statuses.reverse();
+          for (tweet in statuses) {
+            if (allowRetweets || statuses[tweet].text.slice(0,2) !== 'RT') {
+              if (!recordedTweets.includes(statuses[tweet].id)) {
+                socket.emit('tweets', { detail: statuses[tweet] });
+                addTweet(recordedTweets, statuses[tweet]);
+              }
             }
           }
+        } else {
+          console.log(err.statusCode, err.statusMessage);
         }
       });
     }, 10000);
@@ -133,6 +137,7 @@ io.sockets.on('connection', function (socket) {
         }
       });
       console.log('reconnecting. statusCode:', res.statusCode, 'waiting for ', interval, 'milliseconds');
+      console.log(res.statusCode, res.statusMessage);
     });
 
   });
