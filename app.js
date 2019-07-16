@@ -9,7 +9,10 @@ var tw = new twit({ // create new twit object using twitter dev credentials
 	consumer_key: creds.consumer_key,
 	consumer_secret: creds.consumer_secret,
 	access_token: creds.access_token_key,
-	access_token_secret: creds.access_token_secret
+	access_token_secret: creds.access_token_secret,
+  request_options: {
+    proxy: '165.227.95.218:3128'
+  }
 });
 
 app.get('/', function (req, res) {
@@ -68,6 +71,18 @@ io.sockets.on('connection', function (socket) {
 
     twStream.on('error', function(error) {
       throw error;
+    });
+
+    twStream.on('disconnect', function (disconn) {
+      console.log('disconnect')
+    });
+
+    twStream.on('connect', function (conn) {
+      console.log('connecting')
+    });
+
+    twStream.on('reconnect', function (reconn, res, interval) {
+      console.log('reconnecting. statusCode:', res.statusCode)
     });
 
   });
