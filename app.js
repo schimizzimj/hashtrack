@@ -23,13 +23,23 @@ const PORT = process.env.PORT || 3000;
 
 server.listen(PORT);
 
+var twStream = tw.stream( // have only one stream instance per server
+  'statuses/filter',
+  { track: '#placeholder' } // have to put something here to track otherwise twitter returns an error
+);
+var emitTweets = false;
+
+
 io.sockets.on('connection', function (socket) {
   var hashtag = '';
-  var twStream;
   var allowRetweets;
+  var error420 = 0;
+  var errorOther = 0;
 
   socket.on('hashtag', function (data) {
-
+    if (emitTweets === false) {
+      emitTweets = true;
+    }
     allowRetweets = data.retweets;
 
     if (data.query[0] === '#') { // add '#', but only if string does not already contain it
@@ -56,15 +66,12 @@ io.sockets.on('connection', function (socket) {
       twStream.start();
     }
 
-    twStream = tw.stream(
-      'statuses/filter',
-      { track: hashtag }
-    );
-
     twStream.on('tweet', function(tweet) { // check for hashtag in tweet and send to frontend socket if found
-      if((tweet && tweet.text.match(hashtag)) || (tweet.extended_tweet && tweet.extended_tweet.full_text.match(hashtag))) {
-        if (allowRetweets || tweet.text.slice(0,2) !== 'RT') {
-          socket.emit('tweets', { detail: tweet });
+      if (emitTweets) {
+        if((tweet && tweet.text.match(hashtag)) || (tweet.extended_tweet && tweet.extended_tweet.full_text.match(hashtag))) {
+          if (allowRetweets || tweet.text.slice(0,2) !== 'RT') {
+            socket.emit('tweets', { detail: tweet });
+          }
         }
       }
     });
@@ -74,15 +81,15 @@ io.sockets.on('connection', function (socket) {
     });
 
     twStream.on('disconnect', function (disconn) {
-      console.log('disconnect')
+      console.log('disconnect');
     });
 
     twStream.on('connect', function (conn) {
-      console.log('connecting')
+      console.log('connecting');
     });
 
     twStream.on('reconnect', function (reconn, res, interval) {
-      console.log('reconnecting. statusCode:', res.statusCode)
+      console.log('reconnecting. statusCode:', res.statusCode, 'waiting for ', interval, 'milliseconds');
     });
 
   });
