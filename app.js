@@ -70,6 +70,7 @@ io.sockets.on('connection', function (socket) {
           if (allowRetweets || tweet.text.slice(0,2) !== 'RT') {
             if (!recordedTweets.includes(tweet.id)) {
               socket.emit('tweets', { detail: tweet });
+              console.log('Now sending tweet...', tweet.text);
               addTweet(recordedTweets, tweet);
             }
           }
@@ -110,6 +111,7 @@ function addTweet (list, tweet) {
 function getRecentTweets (hashtag, allowRetweets, socket) {
   console.log('refreshing tweets using search api');
   tw.get('search/tweets', { q: hashtag, count: 100, result_type: 'recent'}, function(err, data, response) {
+    console.log(data);
     var statuses = data.statuses;
     if (statuses) {
       statuses.reverse();
@@ -117,6 +119,7 @@ function getRecentTweets (hashtag, allowRetweets, socket) {
         if (allowRetweets || statuses[tweet].text.slice(0,2) !== 'RT') {
           if (!recordedTweets.includes(statuses[tweet].id)) {
             socket.emit('tweets', { detail: statuses[tweet] });
+            console.log('Now sending tweet...', statuses[tweet].text);
             addTweet(recordedTweets, statuses[tweet]);
           }
         }
