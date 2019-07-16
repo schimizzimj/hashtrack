@@ -36,8 +36,13 @@ io.sockets.on('connection', function (socket) {
   var error420 = 0;
   var errorOther = 0;
   var recordedTweets = [];
+  var interval = null;
 
   socket.on('hashtag', function (data) {
+    if (interval) {
+      clearInterval(interval);
+      interval = null;
+    }
     if (emitTweets === false) {
       emitTweets = true;
     }
@@ -86,7 +91,7 @@ io.sockets.on('connection', function (socket) {
     });
 
     // refresh tweet listing using the search api every 30 seconds
-    setInterval(function() {
+    interval = setInterval(function() {
       console.log('refreshing tweets using search api');
       tw.get('search/tweets', { q: hashtag, count: 100, result_type: 'recent'}, function(err, data, response) {
         var statuses = data.statuses;
