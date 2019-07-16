@@ -35,6 +35,7 @@ io.sockets.on('connection', function (socket) {
   var allowRetweets;
   var error420 = 0;
   var errorOther = 0;
+  var recordedTweets = [];
 
   socket.on('hashtag', function (data) {
     if (emitTweets === false) {
@@ -55,7 +56,10 @@ io.sockets.on('connection', function (socket) {
       statuses.reverse();
       for (tweet in statuses) {
         if (allowRetweets || statuses[tweet].text.slice(0,2) !== 'RT') {
-          socket.emit('tweets', { detail: statuses[tweet] });
+          if (!recordedTweets.includes(statuses[tweet].id)) {
+            socket.emit('tweets', { detail: statuses[tweet] });
+            addTweet(recordedTweets, statuses[tweet]);
+          }
         }
       }
     });
@@ -72,7 +76,10 @@ io.sockets.on('connection', function (socket) {
       if (emitTweets) {
         if((tweet && tweet.text.match(hashtag)) || (tweet.extended_tweet && tweet.extended_tweet.full_text.match(hashtag))) {
           if (allowRetweets || tweet.text.slice(0,2) !== 'RT') {
-            socket.emit('tweets', { detail: tweet });
+            if (!recordedTweets.includes(tweet.id)) {
+              socket.emit('tweets', { detail: tweet });
+              addTweet(recordedTweets, tweet);
+            }
           }
         }
       }
@@ -91,9 +98,28 @@ io.sockets.on('connection', function (socket) {
     });
 
     twStream.on('reconnect', function (reconn, res, interval) {
+      tw.get('search/tweets', { q: hashtag, count: 50, result_type: 'recent'}, function(err, data, response) {
+        var statuses = data.statuses;
+        statuses.reverse();
+        for (tweet in statuses) {
+          if (allowRetweets || statuses[tweet].text.slice(0,2) !== 'RT') {
+            if (!recordedTweets.includes(statuses[tweet].id)) {
+              socket.emit('tweets', { detail: statuses[tweet] });
+              addTweet(recordedTweets, statuses[tweet]);
+            }
+          }
+        }
+      });
       console.log('reconnecting. statusCode:', res.statusCode, 'waiting for ', interval, 'milliseconds');
     });
 
   });
 
 });
+
+function addTweet (list, tweet) {
+  var id = tweet.id;
+  if (!list.includes(id)) {
+    list.push(id);
+  }
+}
