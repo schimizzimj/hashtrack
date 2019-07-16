@@ -45,6 +45,16 @@
             ');
           }
         });
+        socket.on('error', function(data) {
+          if (data.code === 420 || data.code === 429) {
+            $('<div class="alert alert-danger alert-dismissible fade show" role="alert">\
+                <strong>Too many requests! Please wait a moment for Twitter to catch up.</strong>\
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">\
+                  <span aria-hidden="true">&times;</span>\
+                </button>\
+              </div>').insertBefore("#loading");
+          }
+        });
         $('#submit').click(function() { // fires when submit button is clicked
           if ($('#hashtag').val() === '') { // check to make sure a hashtag was entered and give alert if not
             $('<div class="alert alert-danger alert-dismissible fade show" role="alert">\
