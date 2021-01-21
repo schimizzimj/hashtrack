@@ -13,7 +13,7 @@
   "keywords": [],
   "dependencies": {
     "express": "^4.17.1",
-    "socket.io": "^2.2.0",
+    "socket.io": "^2.4.0",
     "twit": "^2.2.11",
     "twitter": "^1.7.1"
   }
